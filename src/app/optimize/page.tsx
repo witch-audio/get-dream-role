@@ -74,6 +74,14 @@ function OptimizePageInner() {
     }
   }, []);
 
+  const hasFreeUsed = useCallback(() => {
+    try {
+      return localStorage.getItem("gdrFreeUsed") === "true";
+    } catch {
+      return false;
+    }
+  }, []);
+
   const runAnalysis = useCallback(async () => {
     if (!canProceed(3)) return;
 
@@ -99,6 +107,11 @@ function OptimizePageInner() {
 
       const result = await response.json();
       sessionStorage.setItem("gdrResult", JSON.stringify(result));
+      try {
+        localStorage.setItem("gdrFreeUsed", "true");
+      } catch {
+        // ignore storage errors
+      }
       clearWizardStorage();
       router.push("/results");
     } catch (err) {
@@ -110,12 +123,12 @@ function OptimizePageInner() {
 
   const handleAnalyze = useCallback(() => {
     if (!canProceed(3)) return;
-    if (!isPaid()) {
-      setShowPaymentGate(true);
+    if (isPaid() || !hasFreeUsed()) {
+      runAnalysis();
       return;
     }
-    runAnalysis();
-  }, [canProceed, isPaid, runAnalysis]);
+    setShowPaymentGate(true);
+  }, [canProceed, isPaid, hasFreeUsed, runAnalysis]);
 
   const handleContinue = useCallback(() => {
     if (state.step === 3) {

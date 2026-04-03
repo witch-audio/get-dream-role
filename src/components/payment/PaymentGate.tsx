@@ -67,12 +67,12 @@ export default function PaymentGate({
       <div className="flex items-center gap-2 mb-4">
         <Zap className="h-4 w-4 text-forge-accent" />
         <span className="font-display text-base font-semibold text-forge-text">
-          Unlock Your Analysis
+          Unlock Unlimited Analyses
         </span>
       </div>
 
       <p className="text-sm text-forge-muted mb-5">
-        One-time payment. Everything included.
+        You&apos;ve used your free analysis. Unlock unlimited for a one-time payment.
       </p>
 
       {/* Price */}
