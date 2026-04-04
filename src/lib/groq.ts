@@ -1,12 +1,17 @@
 import Groq from "groq-sdk";
 import { AnalysisResult } from "./types";
 
-function getGroqClient(): Groq {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY environment variable is not set");
+function getGroqClients(): Groq[] {
+  const keys = [
+    process.env.GROQ_API_KEY,
+    process.env.GROQ_API_KEY_2,
+  ].filter(Boolean) as string[];
+
+  if (keys.length === 0) {
+    throw new Error("No GROQ_API_KEY configured");
   }
-  return new Groq({ apiKey });
+
+  return keys.map((apiKey) => new Groq({ apiKey }));
 }
 
 export async function analyzeResume(
@@ -50,9 +55,12 @@ ${resumeText}
 
 Provide a complete analysis with scores, keyword gaps, section-by-section feedback, bullet point rewrites, and a fully optimized version of the resume. Keep all improvements grounded in the candidate's actual experience. Return ONLY valid JSON.`;
 
-  const groq = getGroqClient();
+  const clients = getGroqClients();
+  let lastError: unknown;
 
-  const completion = await groq.chat.completions.create({
+  for (const groq of clients) {
+    try {
+      const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: systemPrompt },
@@ -63,16 +71,21 @@ Provide a complete analysis with scores, keyword gaps, section-by-section feedba
     response_format: { type: "json_object" },
   });
 
-  const content = completion.choices[0]?.message?.content;
-  if (!content) {
-    throw new Error("No response from Groq");
+      const content = completion.choices[0]?.message?.content;
+      if (!content) throw new Error("No response from Groq");
+
+      const parsed = JSON.parse(content);
+      return { ...parsed, atsTarget, targetName } as AnalysisResult;
+    } catch (err: unknown) {
+      const is429 =
+        err instanceof Error && err.message.includes("429");
+      if (is429) {
+        lastError = err;
+        continue; // try next key
+      }
+      throw err; // non-rate-limit errors bubble up immediately
+    }
   }
 
-  const parsed = JSON.parse(content);
-
-  return {
-    ...parsed,
-    atsTarget,
-    targetName,
-  } as AnalysisResult;
+  throw lastError ?? new Error("All Groq keys exhausted");
 }
