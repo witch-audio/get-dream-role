@@ -31,6 +31,7 @@ function OptimizePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPaymentGate, setShowPaymentGate] = useState(false);
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
   const urlParamApplied = useRef(false);
 
   const {
@@ -66,12 +67,12 @@ function OptimizePageInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
-  const isPaid = useCallback(() => {
+  useEffect(() => {
     try {
-      return localStorage.getItem("gdrPaid") === "true";
-    } catch {
-      return false;
-    }
+      if (localStorage.getItem("gdrPaid") === "true") {
+        setHasPaidAccess(true);
+      }
+    } catch { /* ignore */ }
   }, []);
 
   const hasFreeUsed = useCallback(() => {
@@ -123,12 +124,12 @@ function OptimizePageInner() {
 
   const handleAnalyze = useCallback(() => {
     if (!canProceed(3)) return;
-    if (isPaid() || !hasFreeUsed()) {
+    if (hasPaidAccess || !hasFreeUsed()) {
       runAnalysis();
       return;
     }
     setShowPaymentGate(true);
-  }, [canProceed, isPaid, hasFreeUsed, runAnalysis]);
+  }, [canProceed, hasPaidAccess, hasFreeUsed, runAnalysis]);
 
   const handleContinue = useCallback(() => {
     if (state.step === 3) {

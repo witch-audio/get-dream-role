@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { returnPath } = body;
 
-    const origin = request.headers.get("origin") || "http://localhost:3002";
+    const origin = request.headers.get("origin") || "http://localhost:3000";
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
                 "One-time payment for unlimited resume analysis and AI-powered rewrites across all ATS platforms.",
               images: [],
             },
-            unit_amount: 999, // $9.99 in cents
+            unit_amount: 999,
           },
           quantity: 1,
         },
@@ -41,7 +41,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: session.url });
+    // Ensure gdrUserId cookie is set before Stripe redirect
+    // (fallback in case proxy.ts hasn't run yet)
+    const response = NextResponse.json({ url: session.url });
+    if (!request.cookies.get("gdrUserId")) {
+      response.cookies.set("gdrUserId", crypto.randomUUID(), {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+        path: "/",
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Stripe error:", error);
     return NextResponse.json(
