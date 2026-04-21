@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const siteConfig = {
   name: "GetDreamRole",
   url: "https://www.getdreamrole.com",
-  ogImage: "/og.png",
+  ogImage: "/og",
   description:
     "AI-powered resume optimizer built for Greenhouse, Lever, Workday, iCIMS, Taleo, and other ATS platforms. Upload your resume, paste the job description, and get targeted rewrites that pass the filter.",
   price: "9.99",
