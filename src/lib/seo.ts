@@ -180,6 +180,12 @@ export function buildBlogPostingSchema({
 
 interface SoftwareApplicationSchemaOptions extends WebPageSchemaOptions {
   applicationCategory?: string;
+  aggregateRating?: {
+    ratingValue: string;
+    reviewCount: string;
+    bestRating?: string;
+    worstRating?: string;
+  };
 }
 
 export function buildSoftwareApplicationSchema({
@@ -188,6 +194,7 @@ export function buildSoftwareApplicationSchema({
   path,
   keywords,
   applicationCategory = "BusinessApplication",
+  aggregateRating,
 }: SoftwareApplicationSchemaOptions) {
   return {
     "@context": "https://schema.org",
@@ -207,5 +214,114 @@ export function buildSoftwareApplicationSchema({
       "@type": "Organization",
       name: siteConfig.name,
     },
+    ...(aggregateRating && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: aggregateRating.ratingValue,
+        reviewCount: aggregateRating.reviewCount,
+        bestRating: aggregateRating.bestRating ?? "5",
+        worstRating: aggregateRating.worstRating ?? "1",
+      },
+    }),
   };
+}
+
+export function buildOrganizationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: absoluteUrl(siteConfig.ogImage),
+    description: siteConfig.description,
+  };
+}
+
+export function buildWebSiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteConfig.url}/blog?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+export function buildFAQPageSchema(faqs: FAQ[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+interface Breadcrumb {
+  name: string;
+  path: string;
+}
+
+export function buildBreadcrumbSchema(items: Breadcrumb[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  };
+}
+
+interface Review {
+  author: string;
+  reviewBody: string;
+  ratingValue: string;
+}
+
+export function buildReviewsSchema(
+  itemName: string,
+  itemUrl: string,
+  reviews: Review[]
+) {
+  return reviews.map((review) => ({
+    "@context": "https://schema.org",
+    "@type": "Review",
+    itemReviewed: {
+      "@type": "SoftwareApplication",
+      name: itemName,
+      url: itemUrl,
+    },
+    author: {
+      "@type": "Person",
+      name: review.author,
+    },
+    reviewBody: review.reviewBody,
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: review.ratingValue,
+      bestRating: "5",
+      worstRating: "1",
+    },
+  }));
 }

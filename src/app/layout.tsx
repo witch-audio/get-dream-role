@@ -4,7 +4,8 @@ import "./globals.css";
 import Footer from "@/components/landing/Footer";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { baseMetadata } from "@/lib/seo";
+import { baseMetadata, buildOrganizationSchema } from "@/lib/seo";
+import StructuredData from "@/components/seo/StructuredData";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${spaceGrotesk.variable} ${sora.variable}`}>
       <body className="flex flex-col min-h-screen">
+        <StructuredData data={buildOrganizationSchema()} />
         <div className="flex-1">{children}</div>
         <Footer />
         <Analytics />

@@ -51,9 +51,16 @@ export default function Hero() {
             Land the interview.
           </h1>
 
+          <h2
+            className="animate-fade-up font-display text-xl md:text-2xl text-forge-text/90 font-medium max-w-xl leading-snug sr-only md:not-sr-only"
+            style={{ animationDelay: "200ms" }}
+          >
+            The ATS resume optimizer built for Greenhouse, Workday, Lever, iCIMS, and Taleo.
+          </h2>
+
           <p
             className="animate-fade-up text-forge-muted text-lg max-w-xl leading-relaxed"
-            style={{ animationDelay: "240ms" }}
+            style={{ animationDelay: "280ms" }}
           >
             Recruiters never see 75% of resumes. Make sure yours does.
           </p>
