@@ -12,7 +12,6 @@ export default function DataFastAnalytics() {
       websiteId: DATAFAST_WEBSITE_ID,
       domain: DATAFAST_DOMAIN,
       autoCapturePageviews: true,
-      cookieless: true,
     });
   }, []);
 
